@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic Research & Decision Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <div class="logo-icon">AI</div>
+                <div class="logo-text">
+                    <h1>Topic Researcher Agent</h1>
+                    <p>3-Layer Agentic Intelligence | Tufte Executive Reporting</p>
+                </div>
+            </div>
+            <div class="service-pills" id="servicePills">
+                <div class="pill" id="pill-openai"><div class="pill-dot"></div> OpenAI</div>
+                <div class="pill" id="pill-anthropic"><div class="pill-dot"></div> Claude</div>
+                <div class="pill" id="pill-openrouter"><div class="pill-dot"></div> OpenRouter</div>
+                <div class="pill" id="pill-ollama"><div class="pill-dot"></div> Local Ollama</div>
+                <div class="pill" id="pill-gemini"><div class="pill-dot"></div> Gemini API</div>
+                <div class="pill" id="pill-hf"><div class="pill-dot"></div> Hugging Face</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-container">
+        <!-- Control Panel -->
+        <aside class="glass-panel">
+            <h2 class="panel-title">
+                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                Research & Model Configuration
+            </h2>
+
+            <form id="researchForm">
+                <!-- Topic Input -->
+                <div class="form-group">
+                    <label for="topic">Research Topic / Project Name</label>
+                    <input type="text" id="topic" placeholder="e.g. Umoe Mandal Craft Cost-Benefit Analysis" required>
+                </div>
+
+                <!-- Analysis Framework Selector -->
+                <div class="form-group">
+                    <label for="analysisType">Analysis Framework</label>
+                    <select id="analysisType">
+                        <option value="Comprehensive Multi-Dimensional Analysis">Comprehensive Multi-Dimensional Analysis</option>
+                        <option value="Cost-Benefit & Financial Feasibility">Cost-Benefit & Financial Feasibility (EVM / Capex / Opex)</option>
+                        <option value="SWOT Analysis">SWOT Strategic Analysis</option>
+                        <option value="Risk & Mitigation Tracking">Risk Matrix (Probability vs. Impact)</option>
+                        <option value="PESTEL Analysis">PESTEL Environmental & Legal Factors</option>
+                        <option value="Bottleneck & Operational Efficiency">Bottleneck & Operational Efficiency</option>
+                        <option value="Project Controlling & Earned Value (EV) Analysis">Project Controlling (CPI / SPI / EAC / ETC)</option>
+                        <option value="Custom Analysis">Custom Analysis Focus</option>
+                    </select>
+                </div>
+
+                <!-- Custom Focus (Hidden by default) -->
+                <div class="form-group" id="customFocusGroup" style="display: none;">
+                    <label for="customFocus">Custom Focus Instructions</label>
+                    <input type="text" id="customFocus" placeholder="Enter custom analytical focus details...">
+                </div>
+
+                <!-- Chat Service / Model Provider Selector -->
+                <div class="form-group">
+                    <label for="provider">Chat Service & Model Provider</label>
+                    <select id="provider">
+                        <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
+                        <option value="anthropic">Anthropic Claude (Claude 3.5 Sonnet)</option>
+                        <option value="openrouter">OpenRouter AI (Auto Multi-Model Router)</option>
+                        <option value="ollama">Local Ollama Server (llama3.1 / qwen2.5)</option>
+                        <option value="gemini">Google Gemini API (Search Grounded)</option>
+                        <option value="huggingface">Hugging Face Inference Router</option>
+                    </select>
+
+                    <div class="provider-warning" id="providerWarning" style="display: none; margin-top: 0.5rem; padding: 0.6rem 0.8rem; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; font-size: 0.78rem; color: #fbbf24; line-height: 1.4;">
+                        ⚠️ <strong>Token Credits & Speed Notice:</strong> <span id="providerWarningText">Cloud API providers require active token credits. Without credits or API keys, execution will failover to local or offline models, which may be significantly slower.</span>
+                    </div>
+                </div>
+
+                <!-- Manual API Key Accordion -->
+                <div class="accordion">
+                    <div class="accordion-header" id="accordionToggle">
+                        <span>Manual API Keys & Endpoints</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                    <div class="accordion-content" id="accordionContent">
+                        <div class="form-group">
+                            <label for="openaiKey">OpenAI API Key</label>
+                            <input type="text" id="openaiKey" placeholder="sk-proj-...">
+                        </div>
+                        <div class="form-group">
+                            <label for="anthropicKey">Anthropic / Claude API Key</label>
+                            <input type="text" id="anthropicKey" placeholder="sk-ant-...">
+                        </div>
+                        <div class="form-group">
+                            <label for="openrouterKey">OpenRouter API Key</label>
+                            <input type="text" id="openrouterKey" placeholder="sk-or-v1-...">
+                        </div>
+                        <div class="form-group">
+                            <label for="geminiKey">Gemini / Google API Key</label>
+                            <input type="text" id="geminiKey" placeholder="AIzaSy...">
+                        </div>
+                        <div class="form-group">
+                            <label for="hfKey">Hugging Face API Key</label>
+                            <input type="text" id="hfKey" placeholder="hf_...">
+                        </div>
+                        <div class="form-group">
+                            <label for="ollamaUrl">Local Ollama Server URL</label>
+                            <input type="text" id="ollamaUrl" value="http://localhost:11434/v1">
+                        </div>
+                        <button type="button" id="saveKeysBtn" style="width: 100%; padding: 0.5rem; background: rgba(255,255,255,0.1); border: 1px solid var(--border-color); color: #fff; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">Save Keys to .env</button>
+                    </div>
+                </div>
+
+                <!-- Output Format Selector -->
+                <div class="form-group">
+                    <label for="formatCode">Output Format</label>
+                    <select id="formatCode">
+                        <option value="html" selected>HTML Web Page (.html) [Default]</option>
+                        <option value="pdf">PDF Document (.pdf)</option>
+                        <option value="md">Markdown (.md)</option>
+                        <option value="all">All Formats (PDF + Markdown + HTML)</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="submitBtn" class="btn-primary">
+                    Launch Agentic Research
+                </button>
+            </form>
+        </aside>
+
+        <!-- Main Results Pane -->
+        <main class="results-pane">
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="preview">Executive Report Preview</button>
+                <button class="tab-btn" data-tab="markdown">Raw Markdown</button>
+                <button class="tab-btn" data-tab="vault">Report Vault (History)</button>
+            </div>
+
+            <!-- Progress Box -->
+            <div class="progress-box glass-panel" id="progressBox">
+                <div class="spinner"></div>
+                <span id="progressText" style="font-weight: 600; color: var(--primary);">Executing Phase 1: Research & Ingestion...</span>
+            </div>
+
+            <!-- Tab 1: Preview -->
+            <div id="tab-preview" class="tab-content">
+                <div class="report-action-bar glass-panel" id="reportActionBar" style="display: none; margin-bottom: 1rem; padding: 0.75rem 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+                    <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <span>Executive Web Page Report</span>
+                    </div>
+                    <div class="download-actions" id="previewDownloadActions">
+                        <!-- Dynamically populated download options -->
+                    </div>
+                </div>
+
+                <div class="report-preview" id="reportPreview">
+                    <div style="text-align: center; color: var(--text-muted); padding: 5rem 0;">
+                        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="margin-bottom: 1rem; opacity: 0.5;"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <p style="font-size: 1.1rem; font-weight: 600;">No Report Generated Yet</p>
+                        <p style="font-size: 0.85rem;">Enter a research topic on the left and click "Launch Agentic Research".</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Markdown -->
+            <div id="tab-markdown" class="tab-content" style="display: none;">
+                <textarea id="markdownSource" style="width: 100%; height: 700px; background: rgba(10,15,26,0.8); color: #38bdf8; font-family: monospace; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color);" readonly placeholder="Raw Markdown content will appear here..."></textarea>
+            </div>
+
+            <!-- Tab 3: Vault -->
+            <div id="tab-vault" class="tab-content" style="display: none;">
+                <div class="glass-panel">
+                    <h3 style="margin-bottom: 1rem; font-family: var(--font-heading);">Generated Reports History</h3>
+                    <ul class="reports-list" id="reportsList">
+                        <!-- Loaded dynamically -->
+                    </ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

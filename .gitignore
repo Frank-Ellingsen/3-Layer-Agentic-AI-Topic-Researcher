@@ -1,0 +1,38 @@
+# Environment Variables
+.env
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+
+# Database Files
+database/*.db
+research_history.db
+
+# Output Artifacts (Keep directory structures via .gitkeep)
+outputs/markdown/*
+!outputs/markdown/.gitkeep
+outputs/pdf/*
+!outputs/pdf/.gitkeep
+outputs/html/*
+!outputs/html/.gitkeep
+outputs/assets/*
+!outputs/assets/.gitkeep
+
+# Temporary / Scratch Files
+scratch/
+test_pollination.jpg
+*.log
+
+# IDE Settings
+.vscode/
+.idea/
+
+# OS Specific
+.DS_Store
+Thumbs.db

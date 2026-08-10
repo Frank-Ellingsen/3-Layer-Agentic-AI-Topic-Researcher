@@ -1,0 +1,60 @@
+system:
+  environment: "development"
+  debug: true
+
+scheduler:
+  cron_schedule: "0 8 * * 1" # Every Monday at 08:00
+  watch_directory: "./input_folder_z/raw_docs"
+
+models:
+  provider_order:
+    - "openai"
+    - "anthropic"
+    - "openrouter"
+    - "ollama"
+    - "huggingface"
+    - "gemini"
+  openai:
+    base_url: "https://api.openai.com/v1"
+    model_name: "gpt-4o-mini"
+    temperature: 0.2
+    max_tokens: 4096
+  anthropic:
+    base_url: "https://api.anthropic.com/v1"
+    model_name: "claude-3-5-sonnet-20241022"
+    temperature: 0.2
+    max_tokens: 4096
+  openrouter:
+    base_url: "https://openrouter.ai/api/v1"
+    model_name: "openrouter/auto"
+    temperature: 0.2
+    max_tokens: 4096
+  ollama:
+    base_url: "http://localhost:11434/v1"
+    model_name: "llama3.1:latest"
+    temperature: 0.2
+    max_tokens: 4096
+    timeout: 60
+  huggingface:
+    base_url: "https://router.huggingface.co/hf-inference/v1"
+    model_name: "meta-llama/Llama-3.2-3B-Instruct"
+  gemini:
+    model_name: "gemini-3.5-flash"
+    search_grounding: true
+
+destinations:
+  notion:
+    database_id: "your_notion_database_id_here"
+  google_drive:
+    folder_id: "your_drive_folder_id_here"
+  database:
+    path: "./database/workflow_logs.db"
+    legacy_path: "./research_history.db"
+
+tufte_style:
+  font_family: "Helvetica Neue, Helvetica, Arial, sans-serif"
+  primary_color: "#0f172a"
+  accent_amber: "#d97706"
+  accent_red: "#dc2626"
+  remove_vertical_gridlines: true
+  right_align_numbers: true
