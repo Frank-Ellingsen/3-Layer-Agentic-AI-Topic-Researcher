@@ -47,8 +47,8 @@ FORMAT_OPTIONS = {
 
 def print_banner():
     console.print(Panel.fit(
-        "[bold cyan]Agentic Researcher, Analyst & Reporter[/bold cyan]\n"
-        "[dim]Designed for Project Controlling, Forecasting & Cost/Schedule Risk Tracking[/dim]",
+        "[bold cyan]ProjectCast — Project Controlling & Decision Intelligence[/bold cyan]\n"
+        "[dim]3-Layer Agentic AI for EVM Forecasting, Capex/Opex Analysis & Risk Tracking[/dim]",
         border_style="cyan"
     ))
 

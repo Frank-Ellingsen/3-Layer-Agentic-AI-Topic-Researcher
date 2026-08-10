@@ -1,4 +1,4 @@
-Architecture and Implementation of a Fully Automated Agentic AI System
+ProjectCast — Architecture and Implementation of a 3-Layer Agentic AI System
 Executive Summary
 The system outlined in the provided documentation is a sophisticated, three-layer "Agentic AI" architecture designed to automate the entire lifecycle of information processing—from initial data gathering to final report delivery and archiving. By integrating local privacy-focused tools with cloud-based research engines and automated orchestration platforms, the system achieves a "Fully Automated Workflow."
 The architecture relies on three primary pillars: NotebookLM for grounded research and document synthesis, LM Studio for local reasoning and privacy-centric data processing, and Bionic for workflow orchestration and automation. The process is further supported by a development layer consisting of Gemini Chat and Google Antigravity for planning and code generation. This unified pipeline ensures that data is not only collected and analyzed but also validated and distributed through multiple professional channels such as Notion, Slack, and Google Drive.

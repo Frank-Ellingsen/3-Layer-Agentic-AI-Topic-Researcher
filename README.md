@@ -1,12 +1,12 @@
-# Topic Researcher Agent 🚀
-> **A 3-Layer Agentic AI Pipeline for Project Controlling, Forecasting & Cost/Schedule Risk Tracking**
+# ProjectCast 🚀
+> **A 3-Layer Agentic AI Engine for Project Controlling, EVM Forecasting & Decision Intelligence**
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688.svg?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Style: Edward Tufte Data-Ink](https://img.shields.io/badge/Design-Tufte_Data--Ink-000000.svg)](https://www.edwardtufte.com/)
 
-**Topic Researcher** is an enterprise-grade, automated Agentic AI workflow system engineered for **Project Controllers**, **Financial Analysts**, and **Engineering Project Managers**. It automates the entire research lifecycle—from multi-source web and local document ingestion to deep analytical reasoning, EVM forecasting, self-correction validation, and multi-format executive report publishing (PDF, HTML, Markdown).
+**ProjectCast** is an enterprise-grade, automated 3-Layer Agentic AI system engineered for **Project Controllers**, **Financial Analysts**, and **Engineering Project Managers**. It automates the entire research & intelligence lifecycle—from multi-source web and local document ingestion to deep analytical reasoning, EVM forecasting (CPI/SPI, EAC/ETC), DuckDB RAG passage retrieval, self-correction validation, and multi-format executive report publishing (PDF, HTML, Markdown).
 
 ---
 
@@ -69,7 +69,7 @@
 ## 📂 Repository Directory Structure
 
 ```
-Topic Researcher/
+ProjectCast/
 ├── agent.py                 # Interactive Rich Terminal CLI Application
 ├── server.py                # FastAPI Web API Server (Port 8000)
 ├── main.py                  # Pipeline Execution Engine & Watchdog (--watch)
@@ -115,8 +115,8 @@ Topic Researcher/
 Clone the repository and install the dependencies:
 
 ```bash
-git clone https://github.com/your-username/topic-researcher.git
-cd topic-researcher
+git clone https://github.com/your-username/projectcast.git
+cd projectcast
 pip install -r requirements.txt
 ```
 

@@ -17,7 +17,7 @@ from src import storage_sync
 
 load_dotenv()
 
-app = FastAPI(title="Topic Researcher Web API", version="2.0.0")
+app = FastAPI(title="ProjectCast API — Project Controlling & Decision Intelligence", version="2.0.0")
 
 # Serve static output assets and web app UI
 os.makedirs("outputs", exist_ok=True)
