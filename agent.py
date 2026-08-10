@@ -30,11 +30,11 @@ ANALYSIS_OPTIONS = {
 }
 
 PROVIDER_OPTIONS = {
-    "1": ("OpenAI (GPT-4o / GPT-4o-mini)", "openai"),
-    "2": ("Anthropic Claude (Claude 3.5 Sonnet)", "anthropic"),
-    "3": ("OpenRouter AI (Auto Multi-Model Router)", "openrouter"),
-    "4": ("Google Gemini API (Search Grounded)", "gemini"),
-    "5": ("Local Ollama Server (llama3.1 / qwen2.5)", "ollama"),
+    "1": ("Local Ollama Server (llama3.1:latest)", "ollama"),
+    "2": ("OpenAI (GPT-4o / GPT-4o-mini)", "openai"),
+    "3": ("Anthropic Claude (Claude 3.5 Sonnet)", "anthropic"),
+    "4": ("OpenRouter AI (Auto Multi-Model Router)", "openrouter"),
+    "5": ("Google Gemini API (Search Grounded)", "gemini"),
     "6": ("Auto Failover Network (All Available Providers)", None)
 }
 
@@ -107,7 +107,7 @@ def prompt_user_inputs():
     console.print(prov_table)
     console.print("[dim yellow]⚠️ Note: Cloud providers require active API key credits. Inactive or uncredited keys will trigger automatic failover to local or offline models, which may increase execution time.[/dim yellow]\n")
     
-    prov_choice = Prompt.ask("Select model provider [1-6]", choices=list(PROVIDER_OPTIONS.keys()), default="6")
+    prov_choice = Prompt.ask("Select model provider [1-6]", choices=list(PROVIDER_OPTIONS.keys()), default="1")
     provider_label, provider_code = PROVIDER_OPTIONS[prov_choice]
     
     console.print(f"[green]Selected Provider:[/green] {provider_label}")

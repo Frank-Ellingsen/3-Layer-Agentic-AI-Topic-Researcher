@@ -34,6 +34,8 @@ HF_MODEL = os.getenv("HF_MODEL", YAML_CONFIG.get("models", {}).get("huggingface"
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", YAML_CONFIG.get("models", {}).get("ollama", {}).get("base_url", "http://localhost:11434/v1"))
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", YAML_CONFIG.get("models", {}).get("ollama", {}).get("model_name", "llama3.1:latest"))
+OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", YAML_CONFIG.get("models", {}).get("ollama", {}).get("timeout", 300)))
+OLLAMA_MAX_TOKENS = int(os.getenv("OLLAMA_MAX_TOKENS", YAML_CONFIG.get("models", {}).get("ollama", {}).get("max_tokens", 2048)))
 
 LM_STUDIO_URL = YAML_CONFIG.get("models", {}).get("lm_studio", {}).get("base_url", "http://localhost:1234/v1")
 LOCAL_LLM_URL = os.getenv("LOCAL_LLM_URL", OLLAMA_URL)

@@ -109,7 +109,7 @@ ProjectCast/
 
 ### 1. Prerequisites
 * **Python 3.10+** installed.
-* Optional: **Local Ollama** installed and running (`http://localhost:11434`).
+* **Local Ollama** installed and running (`http://localhost:11434`) with model `llama3.1:latest` (Default AI Provider).
 
 ### 2. Installation
 Clone the repository and install the dependencies:
@@ -121,7 +121,7 @@ pip install -r requirements.txt
 ```
 
 ### 3. Environment Configuration
-Copy the environment template and insert your API keys:
+Copy the environment template and insert optional cloud API keys (if using cloud providers instead of local Ollama):
 
 ```bash
 cp .env.example .env
@@ -129,11 +129,12 @@ cp .env.example .env
 
 Edit `.env`:
 ```env
+OLLAMA_URL=http://localhost:11434/v1
+OLLAMA_MODEL=llama3.1:latest
 OPENAI_API_KEY=sk-proj-...
 ANTHROPIC_API_KEY=sk-ant-...
 OPENROUTER_API_KEY=sk-or-v1-...
 GEMINI_API_KEY=AIzaSy...
-OLLAMA_URL=http://localhost:11434/v1
 ```
 
 ---

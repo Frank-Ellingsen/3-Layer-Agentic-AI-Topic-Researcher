@@ -30,7 +30,7 @@ class ResearchRequest(BaseModel):
     topic: str
     analysis_type: Optional[str] = "Comprehensive Multi-Dimensional Analysis"
     analysis_focus: Optional[str] = None
-    provider: Optional[str] = "openrouter" # openai, anthropic, openrouter, ollama, gemini, huggingface
+    provider: Optional[str] = "ollama" # ollama, openai, anthropic, openrouter, gemini, huggingface
     openai_key: Optional[str] = None
     anthropic_key: Optional[str] = None
     openrouter_key: Optional[str] = None

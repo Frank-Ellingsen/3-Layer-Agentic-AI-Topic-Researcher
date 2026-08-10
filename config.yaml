@@ -8,10 +8,10 @@ scheduler:
 
 models:
   provider_order:
+    - "ollama"
     - "openai"
     - "anthropic"
     - "openrouter"
-    - "ollama"
     - "huggingface"
     - "gemini"
   openai:
@@ -33,8 +33,8 @@ models:
     base_url: "http://localhost:11434/v1"
     model_name: "llama3.1:latest"
     temperature: 0.2
-    max_tokens: 4096
-    timeout: 60
+    max_tokens: 2048
+    timeout: 300
   huggingface:
     base_url: "https://router.huggingface.co/hf-inference/v1"
     model_name: "meta-llama/Llama-3.2-3B-Instruct"

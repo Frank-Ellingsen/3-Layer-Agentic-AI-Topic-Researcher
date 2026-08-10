@@ -129,11 +129,21 @@ def query_openrouter(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) ->
     return ""
 
 def query_ollama(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str:
-    """Queries local Ollama endpoint trying installed models."""
+    """Queries local Ollama endpoint trying installed models with fast failover."""
     url = f"{config.OLLAMA_URL}/chat/completions"
     headers = {"Content-Type": "application/json"}
-    models_to_try = [config.OLLAMA_MODEL, "llama3.1:latest", "llama3.2:latest", "qwen2.5-coder:7b"]
+    raw_models = [config.OLLAMA_MODEL, "llama3.2:latest", "qwen2.5-coder:7b", "llama3.1:latest", "qwen3.6:latest"]
     
+    # Deduplicate while preserving order
+    seen = set()
+    models_to_try = []
+    for m in raw_models:
+        if m and m not in seen:
+            seen.add(m)
+            models_to_try.append(m)
+    
+    timeout_sec = getattr(config, "OLLAMA_TIMEOUT", 90)
+    max_tok = getattr(config, "OLLAMA_MAX_TOKENS", 2048)
     for m in models_to_try:
         payload = {
             "model": m,
@@ -142,18 +152,24 @@ def query_ollama(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str
                 {"role": "user", "content": prompt}
             ],
             "temperature": 0.2,
-            "max_tokens": 4096
+            "max_tokens": max_tok,
+            "options": {
+                "num_ctx": 4096,
+                "num_predict": max_tok
+            }
         }
         try:
-            resp = requests.post(url, headers=headers, json=payload, timeout=60)
+            resp = requests.post(url, headers=headers, json=payload, timeout=timeout_sec)
             if resp.status_code == 200:
                 content = resp.json()["choices"][0]["message"]["content"]
                 if content and len(content.strip()) > 50:
                     print(f"[ModelRouter] Successfully generated via local Ollama ({m})")
                     return content
+            else:
+                print(f"[ModelRouter Warning] Ollama returned status {resp.status_code} for model '{m}'")
         except Exception as e:
             print(f"[ModelRouter] Ollama error ({m}): {e}")
-            break
+            continue
     return ""
 
 def query_gemini(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str:
@@ -178,11 +194,15 @@ def query_gemini(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str
 def execute_multi_provider_completion(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT, provider: str = None) -> str:
     """
     Executes completion with provider priority and automatic failover network:
-    Providers supported: 'openai', 'anthropic' / 'claude', 'openrouter', 'gemini', 'ollama'
+    Providers supported: 'ollama', 'openai', 'anthropic' / 'claude', 'openrouter', 'gemini', 'huggingface'
     """
     p = (provider or "").lower()
 
-    if p == "openai":
+    if p == "ollama":
+        res = query_ollama(prompt, system_prompt=system_prompt)
+        if res: return res
+
+    elif p == "openai":
         res = query_openai(prompt, system_prompt=system_prompt)
         if res: return res
 
@@ -198,12 +218,8 @@ def execute_multi_provider_completion(prompt: str, system_prompt: str = ANALYST_
         res = query_gemini(prompt, system_prompt=system_prompt)
         if res: return res
 
-    elif p == "ollama":
-        res = query_ollama(prompt, system_prompt=system_prompt)
-        if res: return res
-
-    # General Failover Network order across all active providers
-    for query_fn in [query_openai, query_anthropic, query_openrouter, query_gemini, query_ollama]:
+    # General Failover Network order across all active providers (Local-first priority)
+    for query_fn in [query_ollama, query_openai, query_anthropic, query_openrouter, query_gemini]:
         res = query_fn(prompt, system_prompt=system_prompt)
         if res:
             return res

@@ -257,20 +257,21 @@
                 <div class="form-group">
                     <label for="provider">AI Provider</label>
                     <select id="provider">
-                        <option value="openrouter">OpenRouter AI (Auto Multi-Model)</option>
+                        <option value="ollama" selected>Local Ollama Server (llama3.1:latest)</option>
                         <option value="openai">OpenAI (GPT-4o / GPT-4o-mini)</option>
                         <option value="anthropic">Anthropic Claude (Claude 3.5 Sonnet)</option>
+                        <option value="openrouter">OpenRouter AI (Auto Multi-Model)</option>
                         <option value="gemini">Google Gemini API</option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="apiKey">API Key <span style="font-weight:normal; font-size:0.75rem; color:var(--text-muted);">(Stored locally in browser)</span></label>
-                    <input type="password" id="apiKey" placeholder="Paste your API key here..." required>
+                    <label for="apiKey">API Key <span style="font-weight:normal; font-size:0.75rem; color:var(--text-muted);">(Required for Cloud APIs, optional for Ollama)</span></label>
+                    <input type="password" id="apiKey" placeholder="Paste your API key here (Optional for Ollama)...">
                 </div>
 
                 <div class="provider-warning" id="providerWarning" style="margin-bottom: 1.25rem; padding: 0.6rem 0.8rem; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; font-size: 0.78rem; color: #fbbf24; line-height: 1.4;">
-                    ⚠️ <strong>Token Credits Notice:</strong> API key required. Requests are sent directly from your browser to the provider.
+                    ℹ️ <span id="warningText"><strong>Local Ollama Active:</strong> Runs open-weights models directly on your local hardware. No remote API key required.</span>
                 </div>
 
                 <button type="submit" id="submitBtn" class="btn-primary">
@@ -369,7 +370,20 @@
 
             // Handle API Chat Request
             async function callLLM(provider, apiKey, systemPrompt, userPrompt) {
-                if (provider === 'openrouter') {
+                if (provider === 'ollama') {
+                    const resp = await fetch('http://localhost:11434/v1/chat/completions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            model: 'llama3.1:latest',
+                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                            temperature: 0.2
+                        })
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.error?.message || 'Ollama API Error. Make sure local Ollama server is running on http://localhost:11434');
+                    return data.choices[0].message.content;
+                } else if (provider === 'openrouter') {
                     const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
@@ -428,7 +442,7 @@
                 const provider = providerSelect.value;
                 const apiKey = apiKeyInput.value.trim();
 
-                if (!topic || !apiKey) return;
+                if (!topic || (provider !== 'ollama' && !apiKey)) return;
 
                 const focusStr = analysisType === 'Custom Analysis' ? customFocus : `${analysisType}: Integrated analysis combining Financial, Risk, SWOT, and Operational perspectives`;
                 currentTitle = `${topic} - ${analysisType}`;
