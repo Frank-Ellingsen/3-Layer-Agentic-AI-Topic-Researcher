@@ -268,6 +268,16 @@ input[type="text"]:focus, select:focus, textarea:focus {
     margin: 1rem 0;
 }
 
+.report-preview a {
+    color: #0284c7;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.report-preview a:hover {
+    color: #0369a1;
+}
+
 .report-preview table {
     width: 100%;
     border-collapse: collapse;

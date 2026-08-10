@@ -52,7 +52,14 @@ def execute_pipeline(payload: dict) -> dict:
         if file_path and os.path.exists(file_path):
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
                 content = f.read()
-            doc_data = {"title": os.path.basename(file_path), "source": file_path, "raw_text": content, "timestamp": datetime.now().isoformat()}
+            abs_p = os.path.abspath(file_path).replace("\\", "/")
+            doc_data = {
+                "title": os.path.basename(file_path),
+                "source": file_path,
+                "raw_text": content,
+                "sources": [{"title": os.path.basename(file_path), "url": f"file:///{abs_p}"}],
+                "timestamp": datetime.now().isoformat()
+            }
         else:
             doc_data = scraper.execute_web_research(topic, provider=provider)
 
@@ -72,7 +79,9 @@ def execute_pipeline(payload: dict) -> dict:
 
         # Step 3: Report Compilation
         print("[Step 4/5] Compiling Executive Tufte-Style Report...")
-        report_markdown = report_agent.generate_markdown_report(validated_analysis, analysis_focus, topic, analysis_type, provider=provider)
+        report_markdown = report_agent.generate_markdown_report(
+            validated_analysis, analysis_focus, topic, analysis_type, provider=provider, sources=doc_data.get("sources")
+        )
 
         # DB Logging (Legacy DB & Telemetry DB)
         db_id = database.save_research(topic, analysis_focus, format_code, raw_research=combined_research, analysis=validated_analysis, report_content=report_markdown)

@@ -14,6 +14,7 @@ Guidelines:
 4. Tables MUST follow Tufte principles: remove vertical gridlines; left-align text, right-align numbers (`---:`).
 5. Mute visual styling; use bold or amber/red highlights only for active risks/variances.
 6. Tone: Objective, authoritative, highly incisive. No conversational preambles.
+7. Data Sources & References: You MUST include a dedicated '## Data Sources & References' section at the end of the report, listing all research sources with clickable Markdown links ([Source Title](URL)).
 """
 
 def inject_header_visual(report_markdown: str, topic: str, header_image_path: str = None) -> str:
@@ -40,14 +41,31 @@ def inject_header_visual(report_markdown: str, topic: str, header_image_path: st
 
     return report_markdown
 
-def generate_markdown_report(analysis_data: str, analysis_focus: str, topic: str, analysis_type: str, header_image_path: str = None, provider: str = None) -> str:
-    """Compiles analytical payload into executive Markdown report using multi-provider router with dynamic topic visual header support."""
+def generate_markdown_report(analysis_data: str, analysis_focus: str, topic: str, analysis_type: str, header_image_path: str = None, provider: str = None, sources: list = None) -> str:
+    """Compiles analytical payload into executive Markdown report using multi-provider router with dynamic topic visual header support and data source references."""
     report_title = f"{topic} - {analysis_type}"
+
+    # Build formatted sources list
+    sources_md_lines = []
+    if sources:
+        for s in sources:
+            if isinstance(s, dict):
+                title = s.get("title", "Data Source")
+                url = s.get("url", "#")
+                sources_md_lines.append(f"- [{title}]({url})")
+            elif isinstance(s, str):
+                sources_md_lines.append(f"- {s}")
+
+    sources_prompt_str = ""
+    if sources_md_lines:
+        sources_prompt_str = "\n\nAvailable Data Sources & References:\n" + "\n".join(sources_md_lines)
+
     prompt = (
         f"Topic: '{topic}'\n"
         f"Analysis Framework: '{analysis_focus}'\n"
-        f"Analysis Findings:\n{analysis_data}\n\n"
-        f"Generate the full executive Markdown report starting with '# {report_title}'."
+        f"Analysis Findings:\n{analysis_data}\n"
+        f"{sources_prompt_str}\n\n"
+        f"Generate the full executive Markdown report starting with '# {report_title}'. Ensure a '## Data Sources & References' section is included at the end with clickable markdown links."
     )
 
     # Use multi-provider router with explicit provider preference
@@ -57,8 +75,12 @@ def generate_markdown_report(analysis_data: str, analysis_focus: str, topic: str
     else:
         report_content = ""
 
-    # 3. Fallback Tufte Markdown report template
+    # Fallback Tufte Markdown report template
     if not report_content:
+        sources_section = ""
+        if sources_md_lines:
+            sources_section = "\n\n## Data Sources & References\n" + "\n".join(sources_md_lines)
+            
         report_content = pdf_generator.clean_markdown(
             f"# {report_title}\n\n"
             f"## Executive Summary\n"
@@ -75,7 +97,12 @@ def generate_markdown_report(analysis_data: str, analysis_focus: str, topic: str
             f"## Key Takeaways & Recommendations\n"
             f"1. Monitor cost variance trends against baseline EAC.\n"
             f"2. Maintain strict risk mitigation tracking for supply chain bottlenecks.\n"
+            f"{sources_section}"
         )
+
+    # Post-processing safeguard: Ensure Data Sources & References section exists with clickable links
+    if sources_md_lines and ("Data Sources" not in report_content and "References" not in report_content):
+        report_content += "\n\n## Data Sources & References\n" + "\n".join(sources_md_lines)
 
     # Inject dynamic topic visual header image
     return inject_header_visual(report_content, topic=topic, header_image_path=header_image_path)

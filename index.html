@@ -173,6 +173,8 @@
         .report-preview h2 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 1.3em; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 2px; margin-top: 1.5rem; margin-bottom: 0.5rem; }
         .report-preview h3 { font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 1.1em; color: #334155; margin-top: 1.2rem; margin-bottom: 0.4rem; }
         .report-preview p { margin-bottom: 0.8rem; text-align: justify; }
+        .report-preview a { color: #0284c7; text-decoration: underline; font-weight: 500; }
+        .report-preview a:hover { color: #0369a1; }
         .report-preview table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.9rem; }
         .report-preview th { border-bottom: 2px solid #334155; border-top: 1px solid #334155; padding: 8px; text-align: left; background: #f8fafc; font-weight: bold; }
         .report-preview td { border-bottom: 1px solid #e2e8f0; padding: 8px; }
@@ -447,7 +449,7 @@
                     const analysisText = await callLLM(provider, apiKey, systemPrompt, analysisPrompt);
                     
                     progressText.innerText = 'Phase 3: Formatting Tufte Executive Web Page Report...';
-                    const reportPrompt = `Topic: '${topic}'\nFramework: '${analysisType}'\nFindings:\n${analysisText}\n\nGenerate the complete Markdown report starting with '# ${currentTitle}'. Format tables following Tufte principles (left-align text, right-align numbers ---:).`;
+                    const reportPrompt = `Topic: '${topic}'\nFramework: '${analysisType}'\nFindings:\n${analysisText}\n\nGenerate the complete Markdown report starting with '# ${currentTitle}'. Format tables following Tufte principles (left-align text, right-align numbers ---:). You MUST include a '## Data Sources & References' section at the end of the report listing research sources with clickable Markdown links ([Source Title](URL)).`;
                     
                     let rawReport = await callLLM(provider, apiKey, systemPrompt, reportPrompt);
                     

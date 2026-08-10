@@ -154,6 +154,16 @@ pre {
     font-weight: bold;
 }
 
+a {
+    color: #0284c7;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+a:hover {
+    color: #0369a1;
+}
+
 img {
     max-width: 100%;
     height: auto;

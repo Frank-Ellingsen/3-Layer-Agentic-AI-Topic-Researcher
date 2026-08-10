@@ -179,7 +179,9 @@ def main():
     console.print("\n[bold green]Executing Phase 3: Generating Tufte-style Report...[/bold green]")
     with Progress(SpinnerColumn(), TextColumn("[progress.description]{task.description}")) as progress:
         progress.add_task(description="Formatting final document...", total=None)
-        report_result = report_agent.generate_markdown_report(validated_analysis, analysis_focus, topic, analysis_type, provider=provider_code)
+        report_result = report_agent.generate_markdown_report(
+            validated_analysis, analysis_focus, topic, analysis_type, provider=provider_code, sources=doc_data.get("sources")
+        )
     
     # 4. Multi-Destination Archiving
     console.print("\n[bold green]Executing Phase 4: Archiving Output Files...[/bold green]")
