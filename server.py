@@ -47,11 +47,13 @@ class ConfigUpdateRequest(BaseModel):
     hf_key: Optional[str] = None
     ollama_url: Optional[str] = None
 
+import asyncio
+
 @app.get("/")
 def read_root():
-    if os.path.exists("index.html"):
-        return FileResponse("index.html")
-    return FileResponse("web/index.html")
+    if os.path.exists("web/index.html"):
+        return FileResponse("web/index.html")
+    return FileResponse("index.html")
 
 @app.get("/api/config")
 def get_system_config():
@@ -116,7 +118,7 @@ def update_system_config(req: ConfigUpdateRequest):
     return {"status": "SUCCESS", "message": "API Keys and Configuration updated successfully"}
 
 @app.post("/api/research")
-def run_research_api(req: ResearchRequest):
+async def run_research_api(req: ResearchRequest):
     # Update temporary keys if supplied in request
     if req.openai_key:
         config.OPENAI_API_KEY = req.openai_key
@@ -155,7 +157,7 @@ def run_research_api(req: ResearchRequest):
     }
 
     try:
-        result = execute_pipeline(payload)
+        result = await asyncio.to_thread(execute_pipeline, payload)
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

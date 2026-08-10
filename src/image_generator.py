@@ -34,20 +34,23 @@ def generate_topic_header_image(topic: str) -> str:
     # 1. Try Gemini Imagen API if key available and quota allows
     if config.GEMINI_API_KEY:
         try:
-            from google import genai
-            client = genai.Client(api_key=config.GEMINI_API_KEY)
-            res = client.models.generate_images(
-                model='imagen-3.0-generate-002',
-                prompt=prompt,
-                config=dict(number_of_images=1, aspect_ratio="16:9")
-            )
-            if res.generated_images:
-                with open(target_path, "wb") as f:
-                    f.write(res.generated_images[0].image.image_bytes)
-                print(f"[ImageGenerator] Generated header image via Gemini Imagen for '{topic}'")
-                return target_path
-        except Exception as e:
-            print(f"[ImageGenerator] Gemini Imagen fallback due to: {e}")
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                from google import genai
+                client = genai.Client(api_key=config.GEMINI_API_KEY)
+                res = client.models.generate_images(
+                    model='imagen-3.0-generate-002',
+                    prompt=prompt,
+                    config=dict(number_of_images=1, aspect_ratio="16:9")
+                )
+                if res.generated_images:
+                    with open(target_path, "wb") as f:
+                        f.write(res.generated_images[0].image.image_bytes)
+                    print(f"[ImageGenerator] Generated header image via Gemini Imagen for '{topic}'")
+                    return target_path
+        except Exception:
+            pass
 
     # 2. Try Pollinations AI image generator
     try:
