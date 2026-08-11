@@ -104,7 +104,7 @@ def query_openrouter(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) ->
         "X-Title": "ProjectCast",
         "Content-Type": "application/json"
     }
-    models_to_try = [config.OPENROUTER_MODEL, "openrouter/auto", "google/gemini-2.0-flash-lite-001", "meta-llama/llama-3.3-70b-instruct"]
+    models_to_try = [config.OPENROUTER_MODEL, "openrouter/auto", "google/gemini-3.5-flash", "meta-llama/llama-3.3-70b-instruct"]
     for m in models_to_try:
         payload = {
             "model": m,

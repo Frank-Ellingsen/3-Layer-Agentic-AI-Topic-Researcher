@@ -39,7 +39,7 @@ models:
     base_url: "https://router.huggingface.co/hf-inference/v1"
     model_name: "meta-llama/Llama-3.2-3B-Instruct"
   gemini:
-    model_name: "gemini-2.0-flash"
+    model_name: "gemini-3.5-flash"
     search_grounding: true
 
 destinations:

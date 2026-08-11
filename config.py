@@ -42,7 +42,7 @@ LOCAL_LLM_URL = os.getenv("LOCAL_LLM_URL", OLLAMA_URL)
 LOCAL_LLM_MODEL = os.getenv("LOCAL_LLM_MODEL", OLLAMA_MODEL)
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or ""
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", YAML_CONFIG.get("models", {}).get("gemini", {}).get("model_name", "gemini-2.0-flash"))
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", YAML_CONFIG.get("models", {}).get("gemini", {}).get("model_name", "gemini-3.5-flash"))
 
 # Watchdog & Storage Paths
 WATCH_DIRECTORY = YAML_CONFIG.get("scheduler", {}).get("watch_directory", "./input_folder_z/raw_docs")
