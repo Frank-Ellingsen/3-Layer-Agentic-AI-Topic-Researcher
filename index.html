@@ -370,67 +370,127 @@
 
             // Handle API Chat Request
             async function callLLM(provider, apiKey, systemPrompt, userPrompt) {
+                // First try Python FastAPI backend endpoint if available (resolves browser CORS issues)
+                try {
+                    const backendUrl = window.location.origin.includes('8000') ? '/api/chat' : 'http://localhost:8000/api/chat';
+                    const backendResp = await fetch(backendUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            provider: provider,
+                            api_key: apiKey || null,
+                            system_prompt: systemPrompt,
+                            user_prompt: userPrompt
+                        })
+                    });
+                    if (backendResp.ok) {
+                        const bData = await backendResp.json();
+                        if (bData.content) return bData.content;
+                    }
+                } catch (e) {
+                    // Backend server not running or unreachable, falling back to direct browser fetch
+                }
+
+                // Direct Browser Fetch Fallback
                 if (provider === 'ollama') {
-                    const resp = await fetch('http://localhost:11434/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'llama3.1:latest',
-                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-                            temperature: 0.2
-                        })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) throw new Error(data.error?.message || 'Ollama API Error. Make sure local Ollama server is running on http://localhost:11434');
-                    return data.choices[0].message.content;
+                    try {
+                        const resp = await fetch('http://localhost:11434/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'llama3.1:latest',
+                                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                                temperature: 0.2
+                            })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.error?.message || 'Ollama API returned an error.');
+                        return data.choices[0].message.content;
+                    } catch (err) {
+                        if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
+                            throw new Error('Connection to Ollama (http://localhost:11434) failed.\n\nTo fix:\n1. Ensure Ollama is running (`ollama serve`).\n2. Allow browser CORS by setting environment variable OLLAMA_ORIGINS="*" before running Ollama.\n3. Or run `python server.py` to route requests via the Python backend.');
+                        }
+                        throw err;
+                    }
                 } else if (provider === 'openrouter') {
-                    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'openrouter/auto',
-                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
-                        })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) throw new Error(data.error?.message || 'OpenRouter API Error');
-                    return data.choices[0].message.content;
+                    if (!apiKey) throw new Error('OpenRouter API Key is required.');
+                    try {
+                        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'openrouter/auto',
+                                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+                            })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.error?.message || 'OpenRouter API Error');
+                        return data.choices[0].message.content;
+                    } catch (err) {
+                        if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
+                            throw new Error('Failed to reach OpenRouter API. Check internet connection or API Key, or run `python server.py` to route via backend.');
+                        }
+                        throw err;
+                    }
                 } else if (provider === 'openai') {
-                    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'gpt-4o-mini',
-                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
-                        })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) throw new Error(data.error?.message || 'OpenAI API Error');
-                    return data.choices[0].message.content;
+                    if (!apiKey) throw new Error('OpenAI API Key is required when selected.');
+                    try {
+                        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'gpt-4o-mini',
+                                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+                            })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.error?.message || 'OpenAI API Error');
+                        return data.choices[0].message.content;
+                    } catch (err) {
+                        if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
+                            throw new Error('Failed to fetch from OpenAI API. Direct browser requests to OpenAI may be blocked by CORS or adblockers.\n\nTo fix:\n1. Ensure a valid OpenAI API Key is entered.\n2. Run `python server.py` and open http://localhost:8000 to route requests via the Python backend.');
+                        }
+                        throw err;
+                    }
                 } else if (provider === 'gemini') {
-                    const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }]
-                        })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) throw new Error(data.error?.message || 'Gemini API Error');
-                    return data.candidates[0].content.parts[0].text;
+                    if (!apiKey) throw new Error('Gemini API Key is required.');
+                    try {
+                        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: `${systemPrompt}\n\n${userPrompt}` }] }]
+                            })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.error?.message || 'Gemini API Error');
+                        return data.candidates[0].content.parts[0].text;
+                    } catch (err) {
+                        if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
+                            throw new Error('Failed to fetch from Gemini API. Check API key or run `python server.py` to route via backend.');
+                        }
+                        throw err;
+                    }
                 } else if (provider === 'anthropic') {
-                    // Route via OpenRouter for CORS compliance or direct
-                    const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: 'anthropic/claude-3.5-sonnet',
-                            messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
-                        })
-                    });
-                    const data = await resp.json();
-                    if (!resp.ok) throw new Error(data.error?.message || 'Anthropic API Error');
-                    return data.choices[0].message.content;
+                    if (!apiKey) throw new Error('Anthropic API Key (via OpenRouter) is required.');
+                    try {
+                        const resp = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'anthropic/claude-3.5-sonnet',
+                                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }]
+                            })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok) throw new Error(data.error?.message || 'Anthropic API Error');
+                        return data.choices[0].message.content;
+                    } catch (err) {
+                        if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
+                            throw new Error('Failed to fetch from Anthropic/OpenRouter API. Check API Key or run `python server.py` to route via backend.');
+                        }
+                        throw err;
+                    }
                 }
             }
 

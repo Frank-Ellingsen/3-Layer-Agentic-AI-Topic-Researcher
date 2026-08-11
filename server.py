@@ -17,7 +17,17 @@ from src import storage_sync
 
 load_dotenv()
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="ProjectCast API — Project Controlling & Decision Intelligence", version="2.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Serve static output assets and web app UI
 os.makedirs("outputs", exist_ok=True)
@@ -39,6 +49,12 @@ class ResearchRequest(BaseModel):
     ollama_url: Optional[str] = None
     format_code: Optional[str] = "html"
 
+class ChatRequest(BaseModel):
+    provider: Optional[str] = "ollama"
+    api_key: Optional[str] = None
+    system_prompt: Optional[str] = ""
+    user_prompt: str
+
 class ConfigUpdateRequest(BaseModel):
     openai_key: Optional[str] = None
     anthropic_key: Optional[str] = None
@@ -46,6 +62,25 @@ class ConfigUpdateRequest(BaseModel):
     gemini_key: Optional[str] = None
     hf_key: Optional[str] = None
     ollama_url: Optional[str] = None
+
+@app.post("/api/chat")
+def chat_completion(req: ChatRequest):
+    from src import local_lm
+    if req.api_key:
+        if req.provider == "openai": config.OPENAI_API_KEY = req.api_key
+        elif req.provider in ["anthropic", "claude"]: config.ANTHROPIC_KEY = req.api_key
+        elif req.provider == "openrouter": config.OPENROUTER_API_KEY = req.api_key
+        elif req.provider == "gemini": config.GEMINI_API_KEY = req.api_key
+        elif req.provider == "huggingface": config.HF_API_KEY = req.api_key
+
+    res = local_lm.execute_multi_provider_completion(
+        req.user_prompt,
+        system_prompt=req.system_prompt,
+        provider=req.provider
+    )
+    if not res:
+        raise HTTPException(status_code=500, detail=f"Failed to generate response using provider '{req.provider}'")
+    return {"content": res}
 
 import asyncio
 
