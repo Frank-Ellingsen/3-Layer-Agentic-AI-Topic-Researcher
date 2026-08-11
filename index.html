@@ -393,6 +393,7 @@
 
                 // Direct Browser Fetch Fallback
                 if (provider === 'ollama') {
+                    // Try /v1/chat/completions first
                     try {
                         const resp = await fetch('http://localhost:11434/v1/chat/completions', {
                             method: 'POST',
@@ -403,9 +404,53 @@
                                 temperature: 0.2
                             })
                         });
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.choices && data.choices[0] && data.choices[0].message) {
+                                return data.choices[0].message.content;
+                            }
+                        }
+                    } catch (err) {
+                        // ignore and try next
+                    }
+
+                    // Try /api/chat next
+                    try {
+                        const resp = await fetch('http://localhost:11434/api/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'llama3.1:latest',
+                                messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+                                stream: false,
+                                options: { temperature: 0.2 }
+                            })
+                        });
+                        if (resp.ok) {
+                            const data = await resp.json();
+                            if (data.message && data.message.content) {
+                                return data.message.content;
+                            }
+                        }
+                    } catch (err) {
+                        // ignore and try next
+                    }
+
+                    // Try /api/generate next
+                    try {
+                        const resp = await fetch('http://localhost:11434/api/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                model: 'llama3.1:latest',
+                                prompt: `${systemPrompt}\n\n${userPrompt}`,
+                                stream: false,
+                                options: { temperature: 0.2 }
+                            })
+                        });
                         const data = await resp.json();
-                        if (!resp.ok) throw new Error(data.error?.message || 'Ollama API returned an error.');
-                        return data.choices[0].message.content;
+                        if (!resp.ok) throw new Error(data.error || 'Ollama API returned an error.');
+                        return data.response;
                     } catch (err) {
                         if (err.name === 'TypeError' || (err.message && err.message.includes('Failed to fetch'))) {
                             throw new Error('Connection to Ollama (http://localhost:11434) failed.\n\nTo fix:\n1. Ensure Ollama is running (`ollama serve`).\n2. Allow browser CORS by setting environment variable OLLAMA_ORIGINS="*" before running Ollama.\n3. Or run `python server.py` to route requests via the Python backend.');

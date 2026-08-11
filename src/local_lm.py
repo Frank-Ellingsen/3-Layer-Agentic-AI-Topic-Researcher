@@ -129,9 +129,11 @@ def query_openrouter(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) ->
     return ""
 
 def query_ollama(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str:
-    """Queries local Ollama endpoint trying installed models with fast failover."""
-    url = f"{config.OLLAMA_URL}/chat/completions"
-    headers = {"Content-Type": "application/json"}
+    """Queries local Ollama endpoint trying installed models with fast failover across multiple API endpoints."""
+    base_url = config.OLLAMA_URL.rstrip("/")
+    if base_url.endswith("/v1"):
+        base_url = base_url[:-3].rstrip("/")
+
     raw_models = [config.OLLAMA_MODEL, "llama3.2:latest", "qwen2.5-coder:7b", "llama3.1:latest", "qwen3.6:latest"]
     
     # Deduplicate while preserving order
@@ -144,32 +146,81 @@ def query_ollama(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str
     
     timeout_sec = getattr(config, "OLLAMA_TIMEOUT", 90)
     max_tok = getattr(config, "OLLAMA_MAX_TOKENS", 2048)
+    headers = {"Content-Type": "application/json"}
+    
     for m in models_to_try:
-        payload = {
-            "model": m,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.2,
-            "max_tokens": max_tok,
-            "options": {
-                "num_ctx": 4096,
-                "num_predict": max_tok
-            }
-        }
+        # Endpoint 1: /v1/chat/completions (OpenAI Compatible)
         try:
+            url = f"{base_url}/v1/chat/completions"
+            payload = {
+                "model": m,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2,
+                "max_tokens": max_tok,
+                "options": {
+                    "num_ctx": 4096,
+                    "num_predict": max_tok
+                }
+            }
             resp = requests.post(url, headers=headers, json=payload, timeout=timeout_sec)
             if resp.status_code == 200:
                 content = resp.json()["choices"][0]["message"]["content"]
                 if content and len(content.strip()) > 50:
-                    print(f"[ModelRouter] Successfully generated via local Ollama ({m})")
+                    print(f"[ModelRouter] Successfully generated via local Ollama /v1/chat/completions ({m})")
                     return content
-            else:
-                print(f"[ModelRouter Warning] Ollama returned status {resp.status_code} for model '{m}'")
         except Exception as e:
-            print(f"[ModelRouter] Ollama error ({m}): {e}")
-            continue
+            print(f"[ModelRouter Debug] Ollama /v1/chat/completions failed for model '{m}': {e}")
+
+        # Endpoint 2: /api/chat (Ollama Native Chat)
+        try:
+            url = f"{base_url}/api/chat"
+            payload = {
+                "model": m,
+                "messages": [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": prompt}
+                ],
+                "stream": False,
+                "options": {
+                    "temperature": 0.2,
+                    "num_ctx": 4096,
+                    "num_predict": max_tok
+                }
+            }
+            resp = requests.post(url, headers=headers, json=payload, timeout=timeout_sec)
+            if resp.status_code == 200:
+                content = resp.json()["message"]["content"]
+                if content and len(content.strip()) > 50:
+                    print(f"[ModelRouter] Successfully generated via local Ollama /api/chat ({m})")
+                    return content
+        except Exception as e:
+            print(f"[ModelRouter Debug] Ollama /api/chat failed for model '{m}': {e}")
+
+        # Endpoint 3: /api/generate (Ollama Native Text Generation)
+        try:
+            url = f"{base_url}/api/generate"
+            payload = {
+                "model": m,
+                "prompt": f"{system_prompt}\n\n{prompt}",
+                "stream": False,
+                "options": {
+                    "temperature": 0.2,
+                    "num_ctx": 4096,
+                    "num_predict": max_tok
+                }
+            }
+            resp = requests.post(url, headers=headers, json=payload, timeout=timeout_sec)
+            if resp.status_code == 200:
+                content = resp.json()["response"]
+                if content and len(content.strip()) > 50:
+                    print(f"[ModelRouter] Successfully generated via local Ollama /api/generate ({m})")
+                    return content
+        except Exception as e:
+            print(f"[ModelRouter Debug] Ollama /api/generate failed for model '{m}': {e}")
+
     return ""
 
 def query_gemini(prompt: str, system_prompt: str = ANALYST_SYSTEM_PROMPT) -> str:
